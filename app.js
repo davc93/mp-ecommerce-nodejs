@@ -1,5 +1,6 @@
 var express = require('express');
 var exphbs  = require('express-handlebars');
+const { sendEmail } = require('./mailer');
 var port = process.env.PORT || 3000
 
 var app = express();
@@ -18,5 +19,15 @@ app.get('/', function (req, res) {
 app.get('/detail', function (req, res) {
     res.render('detail', req.query);
 });
+app.get('/notification_url',(req,res)=>{
+    const data = {
+        body:req.body,
+        query:req.query,
+        headers:req.header
+    }
+    if(data){
+        sendEmail(data)
+    }
+})
 
 app.listen(port);
