@@ -19,7 +19,7 @@ app.get('/', function (req, res) {
 app.get('/detail', function (req, res) {
     res.render('detail', req.query);
 });
-app.get('/notification_url',(req,res)=>{
+app.post('/notification_url',(req,res)=>{
     const data = {
         body:req.body,
         query:req.query,
