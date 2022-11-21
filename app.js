@@ -2,23 +2,23 @@ var express = require("express");
 var exphbs = require("express-handlebars");
 
 // ADDING DEPENDECIES
-const mercadopago = require('mercadopago')
-const cors = require('cors')
+const mercadopago = require("mercadopago");
+const cors = require("cors");
 const { config } = require("./config");
 const { sendEmail } = require("./mailer");
 var port = process.env.PORT || 3000;
+mercadopago.configurations.setAccessToken(config.ACCESS_TOKEN);
 
 var app = express();
 
 mercadopago.configure({
   access_token: config.ACCESS_TOKEN,
-  integrator_id: "671571646",
+  integrator_id: "dev_24c65fb163bf11ea96500242ac130004",
 });
 app.set("trust proxy", true);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());
-
 
 app.engine("handlebars", exphbs());
 app.set("view engine", "handlebars");
@@ -34,21 +34,41 @@ app.get("/", function (req, res) {
 app.get("/detail", function (req, res) {
   res.render("detail", req.query);
 });
+// PAYMENTS URLS
 
+app.get("/payments/success", function (req, res) {
+  res.render("success", req.query);
+});
+app.get("/payments/pending", function (req, res) {
+  res.render("pending", req.query);
+});
+app.get("/payments/failure", function (req, res) {
+  res.render("failure", req.query);
+});
 
 // ADDING ROUTES
 
-
-
 app.post("/create_preference", (req, res) => {
   const preference = {
-    items: [...req.body.items],
+    ...req.body,
     back_urls: {
-      success: `${config.payserverDomain}/feedback`,
-      failure: `${config.payserverDomain}/feedback`,
-      pending: `${config.payserverDomain}/feedback`,
+      success: `${config.payserverDomain}/payments/success`,
+      failure: `${config.payserverDomain}/payments/failure`,
+      pending: `${config.payserverDomain}/payments/pending`,
     },
     auto_return: "approved",
+
+    notification_url: `${config.payserverDomain}/notification_url`,
+    payment_methods: {
+      excluded_payment_methods: [
+        {
+          id: "visa",
+        },
+      ],
+      installments: 6,
+      external_reference: "davc93@gmail.com",
+    },
+    
   };
 
   mercadopago.preferences
@@ -61,6 +81,19 @@ app.post("/create_preference", (req, res) => {
     .catch((error) => {
       throw new Error(error);
     });
+
+  mercadopago.payment
+    .save(preference)
+    .then(function (response) {
+      res.status(response.status).json({
+        status: response.body.status,
+        status_detail: response.body.status_detail,
+        id: response.body.id,
+      });
+    })
+    .catch(function (error) {
+      res.status(response.status).send(error);
+    });
 });
 
 app.post("/notification_url", (req, res) => {
@@ -69,13 +102,12 @@ app.post("/notification_url", (req, res) => {
     query: req.query,
     headers: req.header,
   };
-  if (data) {
+  if (data.body) {
     res.json({
       message: "its all done",
     });
     sendEmail(data);
-
-} else {
+  } else {
     res.json({
       message: "No vienen datos",
     });
