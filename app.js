@@ -68,9 +68,9 @@ app.post("/create_preference", (req, res) => {
           id: "visa",
         },
       ],
-      installments: 6,
-      external_reference: "davc93@gmail.com",
+      installments: 6
     },
+    external_reference: "davc93@gmail.com"
 
   };
 
