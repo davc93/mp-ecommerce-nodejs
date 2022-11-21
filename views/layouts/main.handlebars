@@ -53,5 +53,43 @@
             <circle class="mp-spinner-path" cx="50" cy="50" r="20" fill="none" stroke-miterlimit="10"></circle> </svg> 
         </div>
         <div id="ac-gn-viewport-emitter"> </div>
+        <script>
+            let preference;
+            const siteUrl = 'https://davc93-mp-commerce-nodejs.herokuapp.com'
+            const query = new URLSearchParams(window.location.search) 
+            const createPreference = () => {
+                preference = { payer: { "name": "Lalo", "surname": "Landa", "email":
+      "test_user_51300629@testuser.com", "phone": "+56978400423",
+      "identification": { "type": "DNI", "number": "12345678" }, "address": {
+      "street_name": "calle falsa", "street_number": 123, "zip_code": "1700000" } },
+      
+        external_reference: "test_user_51300629@testuser.com",
+        items:[
+        ]
+       }
+        const product = {
+            id:1234,
+            quantity:1,
+            unit_price:6000,
+            description:"Dispositivo móvil de Tienda e-commerce"
+        }
+       for (const entry of query.entries()){
+        
+        if(entry[0]== 'unit'){continue;}
+        if(entry[0]== 'price'){continue;}
+        if(entry[0]== 'img'){
+            product[entry[0]] = `${siteUrl}${entry[1].slice(1)}`
+            continue 
+        }
+        product[entry[0]] = entry[1]
+       }
+       preference.items.push(product)
+        console.log(preference)
+            }
+            if(window.location.pathname == '/detail'){
+                createPreference()
+            }
+      
+        </script>
     </body>
 </html>
