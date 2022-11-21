@@ -7,14 +7,16 @@ const cors = require("cors");
 const { config } = require("./config");
 const { sendEmail } = require("./mailer");
 var port = process.env.PORT || 3000;
-mercadopago.configurations.setAccessToken(config.ACCESS_TOKEN);
 
 var app = express();
+
+mercadopago.configurations.setAccessToken(config.ACCESS_TOKEN);
 
 mercadopago.configure({
   access_token: config.ACCESS_TOKEN,
   integrator_id: "dev_24c65fb163bf11ea96500242ac130004",
 });
+
 app.set("trust proxy", true);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -49,6 +51,7 @@ app.get("/payments/failure", function (req, res) {
 // ADDING ROUTES
 
 app.post("/create_preference", (req, res) => {
+
   const preference = {
     ...req.body,
     back_urls: {
@@ -68,7 +71,7 @@ app.post("/create_preference", (req, res) => {
       installments: 6,
       external_reference: "davc93@gmail.com",
     },
-    
+
   };
 
   mercadopago.preferences
@@ -82,18 +85,7 @@ app.post("/create_preference", (req, res) => {
       throw new Error(error);
     });
 
-  mercadopago.payment
-    .save(preference)
-    .then(function (response) {
-      res.status(response.status).json({
-        status: response.body.status,
-        status_detail: response.body.status_detail,
-        id: response.body.id,
-      });
-    })
-    .catch(function (error) {
-      res.status(response.status).send(error);
-    });
+
 });
 
 app.post("/notification_url", (req, res) => {
@@ -111,17 +103,6 @@ app.post("/notification_url", (req, res) => {
     res.json({
       message: "No vienen datos",
     });
-  }
-});
-app.get("/feedback", (req, res) => {
-  const data = {
-    Payment: req.query.payment_id,
-    Status: req.query.status,
-    MerchantOrder: req.query.merchant_order_id,
-  };
-  if (data.Payment) {
-    sendEmail(data);
-    res.json(data);
   }
 });
 
